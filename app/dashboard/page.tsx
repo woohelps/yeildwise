@@ -9,7 +9,11 @@ export default function Page() {
 
   useEffect(() => {
     const getData = async () => {
-      const { data } = await supabase.from("stocks_equity").select().limit(10);
+      const { data } = await supabase
+        .from("held_stock_view")
+        .select()
+        .eq("account_id", 1)
+        .limit(10);
       setEquities(data);
     };
     getData();
