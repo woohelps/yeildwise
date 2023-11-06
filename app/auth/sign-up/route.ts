@@ -1,14 +1,14 @@
-import { createClient } from '@/utils/supabase/server'
-import { NextResponse } from 'next/server'
+import { createSupabaseServerClient } from "@/utils/supabase/server";
+import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const requestUrl = new URL(request.url)
-  const formData = await request.formData()
-  const email = String(formData.get('email'))
-  const password = String(formData.get('password'))
-  const supabase = createClient()
+  const requestUrl = new URL(request.url);
+  const formData = await request.formData();
+  const email = String(formData.get("email"));
+  const password = String(formData.get("password"));
+  const supabase = createSupabaseServerClient();
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     options: {
       emailRedirectTo: `${requestUrl.origin}/auth/callback`,
     },
-  })
+  });
 
   if (error) {
     return NextResponse.redirect(
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         // a 301 status is required to redirect from a POST to a GET route
         status: 301,
       }
-    )
+    );
   }
 
   return NextResponse.redirect(
@@ -34,5 +34,5 @@ export async function POST(request: Request) {
       // a 301 status is required to redirect from a POST to a GET route
       status: 301,
     }
-  )
+  );
 }
