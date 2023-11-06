@@ -2,8 +2,8 @@ import { ApolloWrapper } from "@/lib/apollo-wrapper";
 import "./globals.css";
 
 export const metadata = {
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "YeildWise.Ai",
+  description: "The wise tool to find and manage high dividend stocks/ETFs",
 };
 
 export default function RootLayout({
@@ -12,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="fantasy">
       <body className="bg-background text-foreground">
         <main className="min-h-screen flex flex-col items-center">
           <ApolloWrapper>{children}</ApolloWrapper>
