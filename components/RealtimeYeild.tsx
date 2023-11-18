@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getCurrentPrice } from "@/utils/function";
+import { getCurrentPriceYahoo } from "@/utils/function";
 
 interface RealTimeYeildComponentProps {
   fullSymbol: string;
@@ -21,7 +21,7 @@ const RealTimeYeildComponent: React.FC<RealTimeYeildComponentProps> = ({
     const fetchPrice = async () => {
       setLoading(true);
       try {
-        const currentPrice = await getCurrentPrice(fullSymbol);
+        const currentPrice = await getCurrentPriceYahoo(fullSymbol);
         setYeild(
           currentPrice
             ? ((dividendFrequency * cashAmount) / currentPrice) * 100

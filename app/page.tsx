@@ -1,10 +1,10 @@
 import AuthButton from "@/components/AuthButton";
-import DividendTable from "@/ui/DividendTable";
 export const dynamic = "force-dynamic";
 import Image from "next/image";
 
 import StrategySection from "@/components/StrategySection";
 import HeldEquities from "@/components/HeldEquities";
+import DividendTableServer from "@/ui/DividendTableServer";
 
 export default async function Index() {
   const slogans = [
@@ -36,10 +36,10 @@ export default async function Index() {
                     href="/"
                   >
                     <Image
-                      src="/images/yeildwise-logo.png"
+                      src="/images/yieldwise-logo.png"
                       width={128}
                       height={25}
-                      alt="YeildWise"
+                      alt="YieldWise"
                     />
                   </a>
                 </div>
@@ -177,8 +177,8 @@ export default async function Index() {
               Accumulate Small Wins for Big Gains
             </h1>
             <p className="mt-4 text-2xl">
-              Compound interest is the eighth wonder of the world. He who
-              understands it, earns it; he who doesn't, pays it
+              Compound interest is the eighth wonder of the world. <br />
+              He who understands it, earns it;
             </p>
             <div className="mt-8">
               <a
@@ -225,7 +225,7 @@ export default async function Index() {
               tabIndex={-1}
               type="button"
               className="relative justify-center cursor-pointer inline-flex items-center space-x-2 text-center font-regular ease-out duration-200 rounded-md outline-none transition-all outline-0 focus-visible:outline-4 focus-visible:outline-offset-1 border text-scale-1200 bg-scale-100 hover:bg-scale-300 border-scale-600 hover:border-scale-700 dark:border-scale-700 hover:dark:border-scale-800 dark:bg-scale-500 dark:hover:bg-scale-600 focus-visible:outline-brand-600 shadow-sm text-sm leading-4 px-3 py-2"
-              href="https://discord.supabase.com/"
+              href="https://discord.gg/JV64RnHbCj"
             >
               <span className="truncate">Discord</span>
               <svg
@@ -247,7 +247,7 @@ export default async function Index() {
 
         {/* High Dividend Stock/ETF Information */}
         <section className="bg-white p-6 rounded shadow">
-          <DividendTable />
+          <DividendTableServer />
         </section>
 
         {/* Recommendations based on category */}

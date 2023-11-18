@@ -7,7 +7,6 @@ interface YahooFinanceResponse {
         regularMarketPrice: number;
       };
     }>;
-    error: any;
   };
 }
 
@@ -35,19 +34,12 @@ export const getCurrentPrice = async (
 export const getCurrentPriceYahoo = async (
   fullSymbol: string
 ): Promise<number | null> => {
-  const apiUrl = `https://query2.finance.yahoo.com/v7/finance/options/${fullSymbol}`;
-  const headers = {
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
-  };
-
   try {
-    const response = await fetch(apiUrl, { headers });
+    const response = await fetch(`/api/yahooFinance?symbol=${fullSymbol}`);
     if (!response.ok) {
-      throw new Error(`Failed to fetch data for ${fullSymbol}`);
+      throw new Error("Failed to fetch data");
     }
     const jsonResponse: YahooFinanceResponse = await response.json();
-
     const result = jsonResponse.optionChain.result;
 
     if (

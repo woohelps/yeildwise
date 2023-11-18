@@ -2,7 +2,7 @@ import { ApolloWrapper } from "@/lib/apollo-wrapper";
 import "./globals.css";
 
 export const metadata = {
-  title: "YeildWise.Ai",
+  title: "YieldWise.Ai",
   description: "The wise tool to find and manage high dividend stocks/ETFs",
 };
 

@@ -1,36 +1,18 @@
-import { createSupabaseServerClient } from "@/utils/supabase/server";
 import RealTimePriceComponent from "@/components/RealtimePrice";
 import RealTimeYeildComponent from "@/components/RealtimeYeild";
+import { FREQUENCY_CHOICES } from "@/constants";
 
-const DividendTable = async () => {
-  const supabase = createSupabaseServerClient();
+interface DividendTableProps {
+  todayString: string;
+  sevenDaysLaterString: string;
+  data: any[];
+}
 
-  const FREQUENCY_CHOICES: { [key: number]: string } = {
-    1: "Annual",
-    12: "Month",
-    4: "Quarter",
-    2: "Semi-Annual",
-  };
-
-  const today = new Date();
-
-  const sevenDaysLater = new Date();
-  sevenDaysLater.setDate(today.getDate() + 14);
-  const todayString = today.toLocaleDateString();
-  const sevenDaysLaterString = sevenDaysLater.toLocaleDateString(); // 获取七天后的日期的ISO字符串，例如："2023-11-02"
-
-  const { data } = await supabase
-    .from("stocks_dividend")
-    .select(`*, stocks_equity!inner(*, stocks_volatility!inner(*))`)
-    .gt("ex_dividend_date", todayString)
-    // .gt("ex_dividend_date", "2023-10-23")
-    .lte("ex_dividend_date", sevenDaysLaterString)
-    .gt("stocks_equity.stocks_volatility.year_yld:", 0.06)
-    .gt("stocks_equity.stocks_volatility.current_price", 0)
-    .order("ex_dividend_date", { ascending: true });
-
-  if (data == null) return;
-
+const DividendTable: React.FC<DividendTableProps> = ({
+  todayString,
+  sevenDaysLaterString,
+  data,
+}) => {
   return (
     <view>
       <div className="animate-in flex-1 flex flex-col gap-20 opacity-0 max-w-6xl px-3 mb-4">
@@ -46,7 +28,6 @@ const DividendTable = async () => {
 
       <div className="overflow-x-auto w-full">
         <table className="table table-pin-rows">
-          {/* head */}
           <thead>
             <tr>
               <th className="text-center">Symbol</th>

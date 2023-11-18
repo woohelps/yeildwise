@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getCurrentPrice } from "@/utils/function";
+import { getCurrentPriceYahoo } from "@/utils/function";
 
 interface RealTimePriceComponentProps {
   fullSymbol: string;
@@ -18,7 +18,7 @@ const RealTimePriceComponent: React.FC<RealTimePriceComponentProps> = ({
     const fetchPrice = async () => {
       setLoading(true);
       try {
-        const currentPrice = await getCurrentPrice(fullSymbol);
+        const currentPrice = await getCurrentPriceYahoo(fullSymbol);
         setPrice(currentPrice);
       } catch (err) {
         setError("Could not fetch price");
