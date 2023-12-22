@@ -3,13 +3,19 @@
 import React, { useState, useEffect } from "react";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import DividendTable from "@/ui/DividendTable";
+import { EQUITY_TYPES, FREQUENCY_CHOICES } from "@/constants";
 
 const DividendTableClient = () => {
   const today = new Date();
   const sevenDaysLater = new Date(today);
   sevenDaysLater.setDate(today.getDate() + 7);
-  const todayString = today.toLocaleDateString();
-  const sevenDaysLaterString = sevenDaysLater.toLocaleDateString();
+
+  const formatDate = (date: Date): string => {
+    return date.toLocaleDateString("en-CA");
+  };
+
+  const todayString = formatDate(today);
+  const sevenDaysLaterString = formatDate(sevenDaysLater);
 
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,57 +26,46 @@ const DividendTableClient = () => {
     start: todayString,
     end: sevenDaysLaterString,
   });
-  const [frequency, setFrequency] = useState("");
-  const [volatilityRange, setVolatilityRange] = useState({ min: 0, max: 100 });
+  const [frequency, setFrequency] = useState(0);
+  const [volatilityRange, setVolatilityRange] = useState({ min: 0.1, max: 60 });
   const [type, setType] = useState("");
 
-  useEffect(() => {
-    const supabase = createSupabaseBrowserClient();
+  const supabase = createSupabaseBrowserClient();
 
-    let query = supabase
-      .from("stocks_dividend")
-      .select(`*, stocks_equity!inner(*, stocks_volatility!inner(*))`);
+  const fetchData = async () => {
+    setLoading(true);
 
-    // 根据过滤条件更新查询
-    if (searchTerm) {
-      query
-        .ilike("stocks_equity.symbol", `%${searchTerm}%`)
-        .or(`stocks_equity.name.ilike.%${searchTerm}%`);
-    }
-    if (yieldRange.min !== 0 || yieldRange.max !== 1) {
-      query
-        .gte("stocks_equity.stocks_volatility.year_yld", yieldRange.min)
-        .lte("stocks_equity.stocks_volatility.year_yld", yieldRange.max);
-    }
-    if (exDivDateRange.start && exDivDateRange.end) {
-      query
-        .gte("ex_dividend_date", exDivDateRange.start)
-        .lte("ex_dividend_date", exDivDateRange.end);
-    }
-    if (frequency) {
-      query.eq("stocks_equity.dividend_frequency", frequency);
-    }
-    if (volatilityRange.min !== 0 || volatilityRange.max !== 100) {
-      // 添加关于波动率的过滤逻辑
-    }
-    if (type) {
-      query.eq("stocks_equity.type", type);
-    }
+    // 转换分红频率为整数
+    const frequencyInt = FREQUENCY_CHOICES[frequency] || null;
 
-    query.then(({ data, error }) => {
-      if (!error && data) {
-        setData(data);
-      }
+    try {
+      // 使用 Supabase 的 RPC 功能调用数据库函数
+      const { data, error } = await supabase.rpc("search_dividends", {
+        p_search_term: searchTerm || null,
+        p_start_date: exDivDateRange.start,
+        p_end_date: exDivDateRange.end,
+        p_yield_min: yieldRange.min || null,
+        p_yield_max: yieldRange.max || null,
+        p_frequency: frequencyInt,
+        p_volatility_min: volatilityRange.min || null,
+        p_volatility_max: volatilityRange.max || null,
+        p_type: type || null,
+      });
+
+      if (error) throw error;
+
+      setData(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setData([]);
+    } finally {
       setLoading(false);
-    });
-  }, [
-    searchTerm,
-    yieldRange,
-    exDivDateRange,
-    frequency,
-    volatilityRange,
-    type,
-  ]);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -80,6 +75,12 @@ const DividendTableClient = () => {
     <div className="container mx-auto p-4">
       <div className="mb-5 space-y-3">
         {/* 搜索输入框 */}
+        <label
+          htmlFor="searchInput"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Search (Name or Symbol)
+        </label>
         <input
           type="text"
           placeholder="Search by name or symbol"
@@ -89,7 +90,14 @@ const DividendTableClient = () => {
         />
 
         {/* 年化收益率范围输入框 */}
+
         <div className="flex space-x-3">
+          <label
+            htmlFor="minYield"
+            className="block text-sm font-medium text-gray-700"
+          >
+            最小年化收益率 (%)
+          </label>
           <input
             type="number"
             placeholder="Min yield (%)"
@@ -99,6 +107,12 @@ const DividendTableClient = () => {
             }
             className="w-full px-4 py-2 border rounded-md"
           />
+          <label
+            htmlFor="maxYield"
+            className="block text-sm font-medium text-gray-700"
+          >
+            最大年化收益率 (%)
+          </label>
           <input
             type="number"
             placeholder="Max yield (%)"
@@ -112,6 +126,12 @@ const DividendTableClient = () => {
 
         {/* Ex-Dividend Date 范围选择器 */}
         <div className="flex space-x-3">
+          <label
+            htmlFor="exDividendStartDate"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Ex-Dividend Start Date
+          </label>
           <input
             type="date"
             value={exDivDateRange.start}
@@ -120,6 +140,12 @@ const DividendTableClient = () => {
             }
             className="w-full px-4 py-2 border rounded-md"
           />
+          <label
+            htmlFor="exDividendEndDate"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Ex-Dividend End Date
+          </label>
           <input
             type="date"
             value={exDivDateRange.end}
@@ -131,16 +157,32 @@ const DividendTableClient = () => {
         </div>
 
         {/* 分红频率选择器 */}
+        <label
+          htmlFor="dividendFrequency"
+          className="block text-sm font-medium text-gray-700"
+        >
+          分红频率
+        </label>
         <select
           value={frequency}
           onChange={(e) => setFrequency(e.target.value)}
           className="w-full px-4 py-2 border rounded-md"
         >
-          {/* 分红频率选项 */}
+          {Object.entries(FREQUENCY_CHOICES).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
         </select>
 
         {/* 52周波动率范围输入框 */}
         <div className="flex space-x-3">
+          <label
+            htmlFor="dividendFrequency"
+            className="block text-sm font-medium text-gray-700"
+          >
+            最小波动率
+          </label>
           <input
             type="number"
             placeholder="Min volatility (%)"
@@ -153,6 +195,12 @@ const DividendTableClient = () => {
             }
             className="w-full px-4 py-2 border rounded-md"
           />
+          <label
+            htmlFor="dividendFrequency"
+            className="block text-sm font-medium text-gray-700"
+          >
+            最大波动率
+          </label>
           <input
             type="number"
             placeholder="Max volatility (%)"
@@ -168,19 +216,27 @@ const DividendTableClient = () => {
         </div>
 
         {/* 股票类型选择器 */}
+        <label
+          htmlFor="stockType"
+          className="block text-sm font-medium text-gray-700"
+        >
+          股票类型
+        </label>
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
           className="w-full px-4 py-2 border rounded-md"
         >
-          {/* 股票类型选项 */}
+          {EQUITY_TYPES.map((sector, index) => (
+            <option key={index} value={sector}>
+              {sector}
+            </option>
+          ))}
         </select>
 
         {/* 搜索按钮 */}
         <button
-          onClick={() => {
-            /* 触发重新查询的逻辑 */
-          }}
+          onClick={fetchData}
           className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
         >
           Apply Filters

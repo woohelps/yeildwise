@@ -285,7 +285,7 @@ export default async function Index() {
             className="font-bold hover:underline"
             rel="noreferrer"
           >
-            YeildWise
+            YieldWise
           </a>
         </p>
       </footer>

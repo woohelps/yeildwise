@@ -11,14 +11,11 @@ const DividendTableServer = async () => {
   const todayString: string = today.toLocaleDateString();
   const sevenDaysLaterString = sevenDaysLater.toLocaleDateString();
   const { data } = await supabase
-    .from("stocks_dividend")
-    .select(`*, stocks_equity!inner(*, stocks_volatility!inner(*))`)
+    .from("stocks_view_dividend")
+    .select("*")
     .gt("ex_dividend_date", todayString)
-    // .gt("ex_dividend_date", "2023-10-23")
     .lte("ex_dividend_date", sevenDaysLaterString)
-    .gt("stocks_equity.stocks_volatility.year_yld:", 0.06)
-    .gt("stocks_equity.stocks_volatility.current_price", 0)
-    .eq("stocks_equity.status", "active")
+    .gt("year_yld:", 0.06)
     .order("ex_dividend_date", { ascending: true });
 
   if (data == null) return;
